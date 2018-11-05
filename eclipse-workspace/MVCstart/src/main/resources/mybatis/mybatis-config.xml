@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+
+<settings>
+<setting name="cacheEnabled" value="false"/>
+<setting name="useGeneratedKeys" value="true"/>
+<setting name="defaultExecutorType" value="REUSE"/>
+</settings>
+
+<typeAliases>
+	<typeAlias type = "net.su.MVCstart.domain.HomeVO" alias="HomeVO"/>
+	<typeAlias type = "net.su.MVCstart.domain.ReVO" alias="ReVO"/>
+	<typeAlias type = "net.su.MVCstart.domain.searchVO" alias="searchVO"/>
+</typeAliases>
+<mappers>
+<mapper resource="/mybatis/sql/mapper.xml"/>
+<mapper resource="/mybatis/sql/re_mapper.xml"/>
+</mappers>
+
+</configuration>
