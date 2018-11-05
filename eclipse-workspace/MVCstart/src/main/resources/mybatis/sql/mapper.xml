@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="mapper">
+	<resultMap id="values" type="HomeVO">
+		<result property="num" column="POST_NUM"/>
+		<result property="name" column="POST_NAME"/>
+		<result property="title" column="POST_TITLE"/>
+		<result property="contents" column="POST_CONTENTS"/>
+		<result property="sysdate" column="DATE_TIME"/>
+		<result property="hit" column="HIT"/>
+		<result property="fk" column="FK"/>
+		<result property="num_order" column="NUM_ORDER"/>
+		<result property="deps" column="DEPS"/>
+	</resultMap>
+	<resultMap id="search" type="searchVO">
+		<result property="String"/>
+		<result property="word"/>
+		<result property="first"/>
+		<result property="sec"/>
+	</resultMap>
+	<select id ="selectList" resultMap="values">
+		SELECT POST_NUM, POST_NAME, POST_TITLE, FK, NUM_ORDER, DEPS, HIT
+		FROM POST 
+		ORDER BY FK DESC, NUM_ORDER ASC, DEPS ASC LIMIT #{first},20;
+	</select>
+	<select id ="selectList1" resultMap="values">
+		SELECT POST_NUM, POST_NAME, POST_TITLE, FK, NUM_ORDER, DEPS, HIT
+		FROM POST 
+		WHERE POST_NAME LIKE CONCAT('%',#{word},'%') ORDER BY FK DESC, NUM_ORDER ASC, DEPS ASC LIMIT #{first},20;
+	</select>
+	<select id ="selectList2" resultMap="values">
+		SELECT POST_NUM, POST_NAME, POST_TITLE, FK, NUM_ORDER, DEPS, HIT
+		FROM POST 
+		WHERE POST_TITLE LIKE CONCAT('%',#{word},'%') ORDER BY FK DESC, NUM_ORDER ASC, DEPS ASC LIMIT #{first},20;
+	</select>
+	<select id ="selectList3" resultMap="values">
+		SELECT POST_NUM, POST_NAME, POST_TITLE, FK, NUM_ORDER, DEPS, HIT
+		FROM POST 
+		WHERE POST_CONTENTS LIKE CONCAT('%',#{word},'%') ORDER BY FK DESC, NUM_ORDER ASC, DEPS ASC LIMIT #{first},20;
+	</select>
+	<select id ="selectall" resultMap="values">
+		SELECT * FROM POST;
+	</select>
+	<select id ="selectallw" resultMap="values">
+		SELECT * FROM POST WHERE POST_NAME LIKE CONCAT('%',#{word},'%');
+	</select>
+	<select id ="selectallt" resultMap="values">
+		SELECT * FROM POST WHERE POST_TITLE LIKE CONCAT('%',#{word},'%');
+	</select>
+	<select id ="selectallc" resultMap="values">
+		SELECT * FROM POST WHERE POST_CONTENTS LIKE CONCAT('%',#{word},'%');
+	</select>
+	<insert id ="insert_db" parameterType="HomeVO">
+	<selectKey keyProperty="num" resultType="int" order="BEFORE">
+		SELECT IFNULL(MAX(POST_NUM),0)+1 AS NUM FROM POST;
+	</selectKey>
+			INSERT INTO POST(POST_NUM, POST_NAME, POST_TITLE, POST_CONTENTS, DATE_TIME, HIT, FK, NUM_ORDER, DEPS)
+			VALUES(#{num},#{name},#{title},#{contents},CURDATE(),0,#{num},1,0);
+	</insert>
+	<select id="dtl_select" resultMap="values" parameterType="int">
+		SELECT POST_NUM, POST_NAME, POST_TITLE, POST_CONTENTS, DATE_TIME, HIT, FK, NUM_ORDER, DEPS
+		FROM POST WHERE POST_NUM = #{num};
+	</select>
+	<update id="update_db" parameterType="HomeVO">
+		UPDATE POST SET POST_NAME=#{name},POST_TITLE=#{title},POST_CONTENTS=#{contents}
+		WHERE POST_NUM=#{num};
+	</update>
+	<delete id="delete_list" parameterType="int">
+		DELETE FROM POST WHERE POST_NUM=#{num};
+	</delete>
+	<update id="update_hit" parameterType="int">
+		UPDATE POST SET HIT = IFNULL(HIT,0)+1 WHERE POST_NUM=#{num};
+	</update>
+	<select id="reply_select" resultType="int" parameterType="HomeVO">
+		SELECT IFNULL(MAX(NUM_ORDER)+1,#{num_order}+1) AS NUM_ORDER
+		FROM POST WHERE FK=#{fk} AND DEPS>#{deps} AND NUM_ORDER > #{num_order}
+		AND (SELECT IFNULL(MIN(NUM_ORDER), (SELECT MAX(NUM_ORDER)FROM POST WHERE FK=#{fk})+1)FROM POST WHERE FK=#{fk} AND DEPS=#{deps} 
+		AND NUM_ORDER > #{num_order})>NUM_ORDER;
+	</select>
+	<update id="reply_update"  parameterType="HomeVO">
+		UPDATE POST SET NUM_ORDER = NUM_ORDER+1
+		WHERE FK = #{fk} AND NUM_ORDER >= #{num_order};
+	</update>
+	<insert id="reply_insert" parameterType="HomeVO">
+			INSERT INTO POST(POST_NUM, POST_NAME, POST_TITLE, POST_CONTENTS, DATE_TIME, HIT, FK, NUM_ORDER, DEPS)
+			VALUES((SELECT MAX(POST_NUM)+1 FROM POST AS SEC),#{name},#{title},#{contents},CURDATE(),0,#{fk},#{num_order},${deps}+1);
+	</insert>
+</mapper>
