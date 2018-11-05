@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="re_mapper">
+	<resultMap id="values" type="ReVO">
+		<result property="re_num" column="RE_NUM"/>
+		<result property="re_name" column="RE_NAME"/>
+		<result property="re_contents" column="RE_CONTENTS"/>
+		<result property="re_date" column="RE_DATE"/>
+		<result property="fk" column="FK"/>
+	</resultMap>
+	<select id ="get_selectList" resultMap="values" parameterType="int">
+		SELECT RE_NUM, RE_NAME, RE_CONTENTS, RE_DATE, FK
+		FROM RE_POST WHERE FK = #{num};
+	</select>
+	<insert id="comment" parameterType="ReVO">
+		<selectKey keyProperty="re_num" resultType="int" order="BEFORE">
+			SELECT IFNULL(MAX(RE_NUM),0)+1 FROM RE_POST;
+		</selectKey>
+			INSERT INTO RE_POST(RE_NUM, RE_NAME, RE_CONTENTS, RE_DATE, FK)
+			VALUES(#{re_num},#{re_name},#{re_contents},SYSDATE(),#{fk});
+	</insert>
+	<delete id="delete" parameterType="int">
+		DELETE FROM RE_POST WHERE RE_NUM=#{re_num};
+	</delete>
+	<delete id="fkdlt" parameterType="int">
+		DELETE FROM RE_POST WHERE FK=#{fk};
+	</delete>
+</mapper>
